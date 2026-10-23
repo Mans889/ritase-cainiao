@@ -1,0 +1,951 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Data Ritase Cai Niao 4 - Live</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+    body { font-family: 'Inter', sans-serif; }
+  </style>
+</head>
+<body class="bg-slate-900 text-slate-100 min-h-screen flex flex-col">
+
+  <!-- Header Navigasi Compact -->
+  <header class="bg-slate-800 border-b border-slate-700 sticky top-0 z-50 shadow-md">
+    <div class="max-w-7xl mx-auto px-3 sm:px-4 py-2.5 flex flex-col sm:flex-row items-center justify-between gap-2.5">
+      <div class="flex items-center space-x-2.5">
+        <div class="bg-white px-1.5 py-1 rounded-lg shadow flex items-center justify-center">
+          <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTudPr-kpZPPau1HGN55b5y6Z5EekweEAPRVlZUkviXYiFxY3MFz7z_Z6l7&s=10" alt="Logo ASSA" class="h-6 w-auto object-contain">
+        </div>
+        <div>
+          <h1 class="text-xs sm:text-sm font-bold text-white tracking-wide">Data Ritase Cai Niao 4 - Live</h1>
+          <p class="text-[10px] text-slate-400">Tracking Ritase Outbound ASSA</p>
+        </div>
+      </div>
+      <div class="flex items-center space-x-1.5 w-full sm:w-auto justify-center">
+        <button onclick="switchTab('form')" id="btnTabForm" class="px-2.5 py-1 text-[11px] sm:text-xs font-semibold rounded-md bg-blue-600 text-white transition shadow flex items-center">
+          <i class="fa-solid fa-pen-to-square mr-1"></i> Form Input
+        </button>
+        <button onclick="switchTab('db')" id="btnTabDb" class="px-2.5 py-1 text-[11px] sm:text-xs font-semibold rounded-md bg-slate-700 text-slate-300 hover:bg-slate-600 transition flex items-center">
+          <i class="fa-solid fa-database mr-1"></i> Database & GSheet
+        </button>
+        <button onclick="switchTab('master')" id="btnTabMaster" class="px-2.5 py-1 text-[11px] sm:text-xs font-semibold rounded-md bg-slate-700 text-slate-300 hover:bg-slate-600 transition flex items-center">
+          <i class="fa-solid fa-gear mr-1"></i> Master Control
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Container -->
+  <main class="flex-grow max-w-7xl w-full mx-auto p-4 sm:p-6">
+
+    <!-- TAB 1: FORM INPUT -->
+    <div id="tabForm" class="space-y-6 max-w-4xl mx-auto">
+      
+      <!-- Card Login Session Check -->
+      <div class="bg-slate-800 border border-slate-700 rounded-xl p-4 flex items-center justify-between">
+        <div class="flex items-center space-x-3">
+          <div class="w-10 h-10 rounded-full bg-blue-500/20 text-blue-400 flex items-center justify-center font-bold">
+            <i class="fa-solid fa-user-shield"></i>
+          </div>
+          <div>
+            <p class="text-xs text-slate-400">Akun Login Aktif:</p>
+            <p id="currentUserEmail" class="text-sm font-semibold text-white">firmangustiadi08@gmail.com</p>
+            <span id="userRoleBadge" class="text-[10px] bg-amber-500/20 text-amber-300 px-2 py-0.5 rounded font-bold">Full Access (Owner)</span>
+          </div>
+        </div>
+        <button onclick="changeUser()" class="text-xs bg-slate-700 hover:bg-slate-600 px-3 py-1.5 rounded-lg text-slate-300 transition">Ganti Akun</button>
+      </div>
+
+      <!-- Form Utama -->
+      <div class="bg-slate-800 border border-slate-700 rounded-2xl p-5 sm:p-8 shadow-xl space-y-6">
+        
+        <!-- Menu Kategori Operasional -->
+        <div class="bg-gradient-to-r from-blue-950/60 to-slate-900 border border-blue-900/50 rounded-xl p-4 sm:p-5 shadow-inner">
+          <label class="block text-xs font-bold text-blue-300 uppercase tracking-wider mb-2 flex items-center justify-between">
+            <span class="flex items-center"><i class="fa-solid fa-file-excel text-emerald-400 mr-2"></i> Pilih Kategori Operasional</span>
+            <span class="text-[10px] text-slate-400 font-normal">Data otomatis masuk ke sheet tujuan</span>
+          </label>
+          <select id="kategoriHeader" required class="w-full bg-slate-900 border border-blue-600/60 rounded-xl px-4 py-3 text-sm font-semibold text-white focus:outline-none focus:border-blue-400 transition shadow">
+            <!-- Rendered by JS -->
+          </select>
+        </div>
+
+        <div class="border-b border-slate-700 pb-3 flex justify-between items-center">
+          <h2 class="text-lg font-bold text-white flex items-center">
+            <i class="fa-solid fa-truck-fast text-blue-500 mr-2"></i> Update Ritase
+          </h2>
+          <span class="text-xs bg-blue-900/50 text-blue-300 px-2.5 py-1 rounded-full border border-blue-700">Real-time GPS & Timestamp</span>
+        </div>
+
+        <form id="ritaseForm" onsubmit="handleFormSubmit(event)" class="space-y-5">
+          
+          <!-- Plat Nomor Kendaraan & Tipe Unit di Sampingnya -->
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <div class="sm:col-span-2">
+              <label class="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-1">Plat Nomor Kendaraan</label>
+              <select id="vehicle" required class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3.5 py-2.5 text-white focus:outline-none focus:border-blue-500 transition">
+                <!-- Rendered dynamically -->
+              </select>
+            </div>
+            <div>
+              <label class="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-1">Tipe Unit</label>
+              <select id="tipeUnit" required class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3.5 py-2.5 text-xs text-amber-300 font-semibold focus:outline-none focus:border-blue-500 transition">
+                <option value="40 Feet">40 Feet</option>
+                <option value="45 Feet">45 Feet</option>
+                <option value="Kolor Ijo">Kolor Ijo</option>
+                <option value="Wingbox">Wingbox</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label class="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-1">Ritase (Tahapan)</label>
+              <select id="tahap" required class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3.5 py-2.5 text-white focus:outline-none focus:border-blue-500 transition">
+                <option value="arrivalMuat">Tiba di Lokasi Muat (Arrival Muat)</option>
+                <option value="startLoad">Mulai Loading (Start Load)</option>
+                <option value="finishLoad">Selesai Loading (Finish Load)</option>
+                <option value="arrivalBongkar">Tiba di Lokasi Bongkar (Arrival Bongkar)</option>
+                <option value="startUnload">Mulai Unloading (Start Unload)</option>
+                <option value="finishUnload">Selesai Unloading (Finish Unload)</option>
+              </select>
+            </div>
+            <div>
+              <label class="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-1">No. Job Order (Opsional)</label>
+              <input type="text" id="jobOrder" placeholder="Contoh: JO-481176" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3.5 py-2.5 text-white focus:outline-none focus:border-blue-500 transition">
+            </div>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label class="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-1">Loading Location (Muat)</label>
+              <select id="loadingLocation" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3.5 py-2.5 text-white focus:outline-none focus:border-blue-500 transition">
+                <!-- Rendered by JS -->
+              </select>
+            </div>
+            <div>
+              <label class="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-1">Unloading Location (Bongkar)</label>
+              <select id="unloadingLocation" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3.5 py-2.5 text-white focus:outline-none focus:border-blue-500 transition">
+                <!-- Rendered by JS -->
+              </select>
+            </div>
+          </div>
+
+          <div>
+            <label class="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-1">Waktu Check-in (Otomatis)</label>
+            <input type="text" id="waktuOtomatis" readonly class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-blue-400 font-mono font-bold">
+          </div>
+
+          <!-- Camera -->
+          <div>
+            <label class="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2">Ambil Foto Bukti Tahapan (Live Camera + Timestamp Wajib)</label>
+            <div class="bg-slate-900 border-2 border-dashed border-slate-700 rounded-2xl p-4 text-center relative overflow-hidden">
+              <div id="cameraContainer" class="relative w-full h-64 bg-black rounded-xl overflow-hidden hidden">
+                <video id="videoElement" autoplay playsinline class="w-full h-full object-cover"></video>
+                <div id="liveWatermark" class="absolute bottom-2 left-2 bg-black/70 text-white text-[11px] font-mono px-2 py-1 rounded">
+                  TIMESTAMP: 23-10-2026 20:35:00
+                </div>
+              </div>
+              <canvas id="canvasElement" class="w-full h-64 object-cover rounded-xl hidden"></canvas>
+              <div id="cameraPlaceholder" class="py-10">
+                <i class="fa-solid fa-camera text-4xl text-slate-500 mb-2"></i>
+                <p class="text-sm text-slate-400 mb-3">Kamera belum diaktifkan</p>
+                <button type="button" onclick="startCamera()" class="bg-blue-600 hover:bg-blue-500 text-white font-medium px-5 py-2.5 rounded-xl text-sm transition shadow">
+                  <i class="fa-solid fa-power-off mr-1"></i> Buka Kamera Live
+                </button>
+              </div>
+              <div id="cameraAction" class="mt-3 hidden">
+                <button type="button" onclick="takeSnapshot()" class="bg-emerald-600 hover:bg-emerald-500 text-white font-bold px-6 py-2.5 rounded-xl text-sm transition shadow">
+                  <i class="fa-solid fa-camera-retro mr-1"></i> Ambil Foto (Snap)
+                </button>
+                <button type="button" onclick="retakePhoto()" class="bg-slate-700 hover:bg-slate-600 text-slate-200 font-medium px-4 py-2.5 rounded-xl text-sm ml-2 transition">
+                  Ulangi
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <div>
+            <label class="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-1">Keterangan / Remarks</label>
+            <textarea id="remarks" rows="2" placeholder="Catatan kendala atau informasi lapangan..." class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3.5 py-2.5 text-white focus:outline-none focus:border-blue-500 transition"></textarea>
+          </div>
+
+          <button type="submit" class="w-full bg-blue-600 hover:bg-blue-500 text-white font-bold py-3.5 rounded-xl transition shadow-lg text-base">
+            <i class="fa-solid fa-cloud-arrow-up mr-2"></i> Submit & Sinkron ke GSheet
+          </button>
+        </form>
+      </div>
+
+      <div class="bg-blue-950/40 border border-blue-900/50 rounded-xl p-4 text-xs text-blue-300 flex items-center space-x-3">
+        <i class="fa-solid fa-circle-info text-lg text-blue-400 flex-shrink-0"></i>
+        <p>Hubungi Transport Coordinator jika ada yang ingin di tanyakan, Okeh!</p>
+      </div>
+    </div>
+
+
+    <!-- TAB 2: DATABASE VIEW -->
+    <div id="tabDb" class="space-y-6 hidden">
+      
+      <div id="accessDeniedPanel" class="bg-red-950/40 border border-red-900/50 rounded-2xl p-6 text-center hidden">
+        <i class="fa-solid fa-lock text-4xl text-red-500 mb-3"></i>
+        <h3 class="text-lg font-bold text-white mb-1">Akses Terbatas (Restricted Area)</h3>
+        <p class="text-sm text-red-300 max-w-md mx-auto mb-4">Anda tidak memiliki izin untuk mengakses Database View. Hubungi Owner.</p>
+        <button onclick="switchTab('form')" class="bg-slate-700 hover:bg-slate-600 text-white text-xs font-semibold px-4 py-2 rounded-xl">Kembali ke Form Input</button>
+      </div>
+
+      <div id="databaseContent" class="space-y-4">
+        
+        <div class="bg-slate-800 border border-slate-700 rounded-2xl p-4 space-y-4 shadow-xl">
+          <div class="flex flex-col sm:flex-row justify-between items-center gap-3">
+            <h3 class="text-sm font-bold text-white flex items-center">
+              <i class="fa-solid fa-table text-emerald-400 mr-2"></i> Database View
+            </h3>
+            <div class="relative w-full sm:w-80">
+              <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-slate-400">
+                <i class="fa-solid fa-calendar-days text-xs"></i>
+              </span>
+              <input type="text" id="searchInput" onkeyup="renderDatabaseTable()" placeholder="Cari by Tanggal (DD-MM-YYYY), plat, JO..." class="w-full bg-slate-900 border border-slate-700 rounded-xl pl-9 pr-3 py-2 text-xs text-white focus:outline-none focus:border-blue-500 transition">
+            </div>
+          </div>
+
+          <div class="overflow-x-auto rounded-xl border border-slate-700">
+            <table class="w-full text-left border-collapse text-xs">
+              <thead>
+                <tr class="bg-slate-900 text-slate-400 border-b border-slate-700 uppercase font-semibold">
+                  <th class="p-3 whitespace-nowrap">Tanggal</th>
+                  <th class="p-3 whitespace-nowrap">Sheet GSheet</th>
+                  <th class="p-3 whitespace-nowrap">Plat Nomor</th>
+                  <th class="p-3 whitespace-nowrap text-center">Tipe Unit</th>
+                  <th class="p-3 whitespace-nowrap text-center">Rit</th>
+                  <th class="p-3 whitespace-nowrap">Loading Loc</th>
+                  <th class="p-3 whitespace-nowrap">Arrival Muat & Foto</th>
+                  <th class="p-3 whitespace-nowrap">Start Load & Foto</th>
+                  <th class="p-3 whitespace-nowrap">Finish Load & Foto</th>
+                  <th class="p-3 whitespace-nowrap">Unloading Loc</th>
+                  <th class="p-3 whitespace-nowrap">Arrival Bongkar & Foto</th>
+                  <th class="p-3 whitespace-nowrap">Start Unload & Foto</th>
+                  <th class="p-3 whitespace-nowrap">Finish Unload & Foto</th>
+                  <th class="p-3 whitespace-nowrap">Job Order</th>
+                  <th class="p-3 whitespace-nowrap text-center">Konfirmasi Edit (OK)</th>
+                </tr>
+              </thead>
+              <tbody id="dbTableBody" class="divide-y divide-slate-700 text-slate-200">
+                <!-- Rendered by JS -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+
+    <!-- TAB 3: MASTER CONTROL -->
+    <div id="tabMaster" class="space-y-6 hidden max-w-4xl mx-auto">
+      
+      <div id="masterAccessDenied" class="bg-red-950/40 border border-red-900/50 rounded-2xl p-6 text-center hidden">
+        <i class="fa-solid fa-shield-halved text-4xl text-red-500 mb-3"></i>
+        <h3 class="text-lg font-bold text-white mb-1">Akses Terbatas</h3>
+        <p class="text-sm text-red-300 max-w-md mx-auto mb-4">Anda tidak memiliki izin untuk mengakses Master Control.</p>
+        <button onclick="switchTab('form')" class="bg-slate-700 hover:bg-slate-600 text-white text-xs font-semibold px-4 py-2 rounded-xl">Kembali ke Form Input</button>
+      </div>
+
+      <div id="masterControlContent" class="space-y-4">
+        
+        <div class="bg-slate-800 p-5 rounded-2xl border border-slate-700 space-y-6 shadow-xl">
+          <div class="flex justify-between items-center border-b border-slate-700 pb-3">
+            <h3 class="text-base font-bold text-white flex items-center">
+              <i class="fa-solid fa-gears text-amber-400 mr-2"></i> Panel Kontrol Master & Pengaturan
+            </h3>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            
+            <!-- 1. Kategori Sheet GSheet -->
+            <div class="space-y-2 bg-slate-900/50 p-3.5 rounded-xl border border-slate-700">
+              <h4 class="text-xs font-bold text-blue-300 uppercase tracking-wider flex items-center">
+                <i class="fa-solid fa-file-excel mr-1.5"></i> Sheet GSheet
+              </h4>
+              <div class="flex items-center space-x-1.5">
+                <input type="text" id="newKategoriInput" placeholder="Nama sheet baru..." class="bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white w-full">
+                <button onclick="addNewMasterItem('kategori')" class="bg-blue-600 hover:bg-blue-500 text-white text-xs font-medium px-2.5 py-1.5 rounded-lg whitespace-nowrap">Tambah</button>
+              </div>
+              <div id="kategoriMasterList" class="bg-slate-900 border border-slate-700 rounded-xl p-2 max-h-32 overflow-y-auto space-y-1"></div>
+            </div>
+
+            <!-- 2. Master Plat Nomor -->
+            <div class="space-y-2 bg-slate-900/50 p-3.5 rounded-xl border border-slate-700">
+              <h4 class="text-xs font-bold text-blue-300 uppercase tracking-wider flex items-center">
+                <i class="fa-solid fa-truck mr-1.5"></i> Plat Nomor
+              </h4>
+              <div class="flex items-center space-x-1.5">
+                <input type="text" id="newVehicleInput" placeholder="B 1234 XXX" class="bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white w-full">
+                <button onclick="addNewMasterItem('vehicle')" class="bg-blue-600 hover:bg-blue-500 text-white text-xs font-medium px-2.5 py-1.5 rounded-lg whitespace-nowrap">Tambah</button>
+              </div>
+              <div id="vehicleMasterList" class="bg-slate-900 border border-slate-700 rounded-xl p-2 max-h-32 overflow-y-auto space-y-1"></div>
+            </div>
+
+            <!-- 3. Loading Location -->
+            <div class="space-y-2 bg-slate-900/50 p-3.5 rounded-xl border border-slate-700">
+              <h4 class="text-xs font-bold text-emerald-300 uppercase tracking-wider flex items-center">
+                <i class="fa-solid fa-warehouse mr-1.5"></i> Loading Loc
+              </h4>
+              <div class="flex items-center space-x-1.5">
+                <input type="text" id="newLoadingInput" placeholder="Gudang muat..." class="bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white w-full">
+                <button onclick="addNewMasterItem('loading')" class="bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-medium px-2.5 py-1.5 rounded-lg whitespace-nowrap">Tambah</button>
+              </div>
+              <div id="loadingMasterList" class="bg-slate-900 border border-slate-700 rounded-xl p-2 max-h-32 overflow-y-auto space-y-1"></div>
+            </div>
+
+            <!-- 4. Unloading Location -->
+            <div class="space-y-2 bg-slate-900/50 p-3.5 rounded-xl border border-slate-700">
+              <h4 class="text-xs font-bold text-amber-300 uppercase tracking-wider flex items-center">
+                <i class="fa-solid fa-location-dot mr-1.5"></i> Unloading Loc
+              </h4>
+              <div class="flex items-center space-x-1.5">
+                <input type="text" id="newUnloadingInput" placeholder="Gudang bongkar..." class="bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white w-full">
+                <button onclick="addNewMasterItem('unloading')" class="bg-amber-600 hover:bg-amber-500 text-white text-xs font-medium px-2.5 py-1.5 rounded-lg whitespace-nowrap">Tambah</button>
+              </div>
+              <div id="unloadingMasterList" class="bg-slate-900 border border-slate-700 rounded-xl p-2 max-h-32 overflow-y-auto space-y-1"></div>
+            </div>
+
+          </div>
+
+          <!-- Manajemen Akses Email Tim (Full Only) -->
+          <div id="ownerEmailManagement" class="border-t border-slate-700 pt-4 hidden flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
+            <span class="text-xs text-slate-300 font-semibold">Manajemen Akses Email Tim:</span>
+            <div class="flex flex-wrap items-center gap-2 w-full sm:w-auto">
+              <input type="email" id="newAccessEmail" placeholder="Email anggota..." class="bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white">
+              <select id="newAccessRole" class="bg-slate-900 border border-slate-700 rounded-lg px-2 py-1.5 text-xs text-white">
+                <option value="half">Half Access (DB & Add Master)</option>
+                <option value="full">Full Access (Owner Level)</option>
+              </select>
+              <button onclick="addTeamEmail()" class="bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-medium px-3 py-1.5 rounded-lg whitespace-nowrap">Beri Akses</button>
+            </div>
+          </div>
+
+          <!-- Approval Section -->
+          <div id="approvalSection" class="border-t border-slate-700 pt-4 hidden">
+            <h4 class="text-xs font-bold text-amber-300 uppercase tracking-wider mb-2">
+              <i class="fa-solid fa-bell mr-1"></i> Permintaan Approval Editan (<span id="pendingCount">0</span>)
+            </h4>
+            <div id="pendingList" class="space-y-2"></div>
+          </div>
+
+        </div>
+      </div>
+
+    </div>
+
+  </main>
+
+  <script>
+    // URL Web App Google Apps Script lo yang sudah terintegrasi
+    const GSHEET_API_URL = "https://script.google.com/macros/s/AKfycbzywOHlfDgulanzPmxkabo5XaQMn_rovzJY1avyqfuNUIzp-a5Up5Q8DDIYphA4oxx4sA/exec";
+
+    let kategoriHeaderList = [
+      "Outbound",
+      "Trial unit 40FT & 45FT",
+      "Migrasi Clove",
+      "Unit Assesment 45ft",
+      "Outbound Cai Niao",
+      "Outbound Clove"
+    ];
+
+    let vehicleList = [
+      "B 9018 TEK",
+      "B 9026 TEK",
+      "B 9478 UFY",
+      "B 9479 UFY",
+      "B 9015 UFZ",
+      "B 9116 UFZ"
+    ];
+
+    let loadingLocations = [
+      "Gudang Cainiao, Cikarang",
+      "Gudang ILC, KIIC Karawang",
+      "Gudang SFP Lot 41, KIIC Karawang",
+      "Gudang ILC, Surya Cipta Karawang",
+      "Lot 17, KIIC (Homebase)"
+    ];
+
+    let unloadingLocations = [
+      "Gudang Lot 41, PPK",
+      "Gudang Lot 41, PPW",
+      "Gudang Lot 41, CLOVE",
+      "Gudang ILC, KIIC",
+      "Gudang Cainiao, Cikarang"
+    ];
+
+    let databaseData = [
+      { 
+        id: 1, tanggal: '23-10-2026', kategori: 'Outbound Cai Niao', vehicle: 'B 9018 TEK', tipeUnit: '40 Feet', rit: 1, 
+        loadingLocation: 'Gudang Cainiao, Cikarang', 
+        arrivalMuat: '08:39:00', fotoArrivalMuat: 'https://images.unsplash.com/photo-1586528116311-ad8dd3c8310d?w=100',
+        startLoad: '08:43:00', fotoStartLoad: 'https://images.unsplash.com/photo-1578575437130-527eed3abbec?w=100',
+        finishLoad: '08:53:00', fotoFinishLoad: '',
+        unloadingLocation: 'Gudang ILC, KIIC', 
+        arrivalBongkar: '09:55:00', fotoArrivalBongkar: '',
+        startUnload: '10:02:00', fotoStartUnload: '',
+        finishUnload: '10:05:00', fotoFinishUnload: '',
+        jobOrder: 'JO-481176', 
+        isEdited: true
+      }
+    ];
+
+    let pendingApprovals = [];
+    let teamAccessList = {
+      'firmangustiadi08@gmail.com': 'full'
+    };
+    let currentEmail = 'firmangustiadi08@gmail.com';
+
+    let videoStream = null;
+    let capturedPhotoData = null;
+
+    function formatPlatNomor(inputStr) {
+      if (!inputStr) return "";
+      let clean = inputStr.trim().toUpperCase().replace(/\s+/g, '');
+      let match = clean.match(/^([A-Z]{1,2})(\d{1,4})([A-Z]{1,3})$/);
+      if (match) {
+        return `${match[1]} ${match[2]} ${match[3]}`;
+      }
+      return inputStr.trim().toUpperCase();
+    }
+
+    function renderAppUI() {
+      const kategoriSelect = document.getElementById('kategoriHeader');
+      const vehicleSelect = document.getElementById('vehicle');
+      const loadingSelect = document.getElementById('loadingLocation');
+      const unloadingSelect = document.getElementById('unloadingLocation');
+
+      const kategoriMasterList = document.getElementById('kategoriMasterList');
+      const vehicleMasterList = document.getElementById('vehicleMasterList');
+      const loadingMasterList = document.getElementById('loadingMasterList');
+      const unloadingMasterList = document.getElementById('unloadingMasterList');
+
+      const role = teamAccessList[currentEmail] || 'half';
+      const isFull = (role === 'full');
+
+      if (kategoriSelect) {
+        kategoriSelect.innerHTML = '';
+        kategoriHeaderList.forEach(kat => {
+          kategoriSelect.innerHTML += `<option value="${kat}">${kat}</option>`;
+        });
+      }
+
+      if (vehicleSelect) {
+        vehicleSelect.innerHTML = '<option value="">-- Pilih Plat Nomor --</option>';
+        vehicleList.forEach(veh => {
+          vehicleSelect.innerHTML += `<option value="${veh}">${veh}</option>`;
+        });
+      }
+
+      if (loadingSelect) {
+        loadingSelect.innerHTML = '<option value="">-- Pilih Lokasi Muat --</option>';
+        loadingLocations.forEach(loc => {
+          loadingSelect.innerHTML += `<option value="${loc}">${loc}</option>`;
+        });
+      }
+
+      if (unloadingSelect) {
+        unloadingSelect.innerHTML = '<option value="">-- Pilih Lokasi Bongkar --</option>';
+        unloadingLocations.forEach(loc => {
+          unloadingSelect.innerHTML += `<option value="${loc}">${loc}</option>`;
+        });
+      }
+
+      if (kategoriMasterList && vehicleMasterList && loadingMasterList && unloadingMasterList) {
+        kategoriMasterList.innerHTML = '';
+        kategoriHeaderList.forEach((kat, index) => {
+          kategoriMasterList.innerHTML += `
+            <div class="flex items-center justify-between bg-slate-800 px-2.5 py-1 rounded-lg text-xs text-slate-200 border border-slate-700/50">
+              <span class="truncate pr-2">${kat}</span>
+              ${isFull ? `<button onclick="removeMasterItem('kategori', ${index})" class="text-red-400 hover:text-red-300 font-bold px-1.5 py-0.5 rounded hover:bg-red-950/50 transition" title="Hapus">×</button>` : ''}
+            </div>`;
+        });
+
+        vehicleMasterList.innerHTML = '';
+        vehicleList.forEach((veh, index) => {
+          vehicleMasterList.innerHTML += `
+            <div class="flex items-center justify-between bg-slate-800 px-2.5 py-1 rounded-lg text-xs text-slate-200 border border-slate-700/50">
+              <span class="truncate pr-2">${veh}</span>
+              ${isFull ? `<button onclick="removeMasterItem('vehicle', ${index})" class="text-red-400 hover:text-red-300 font-bold px-1.5 py-0.5 rounded hover:bg-red-950/50 transition" title="Hapus">×</button>` : ''}
+            </div>`;
+        });
+
+        loadingMasterList.innerHTML = '';
+        loadingLocations.forEach((loc, index) => {
+          loadingMasterList.innerHTML += `
+            <div class="flex items-center justify-between bg-slate-800 px-2.5 py-1 rounded-lg text-xs text-slate-200 border border-slate-700/50">
+              <span class="truncate pr-2">${loc}</span>
+              ${isFull ? `<button onclick="removeMasterItem('loading', ${index})" class="text-red-400 hover:text-red-300 font-bold px-1.5 py-0.5 rounded hover:bg-red-950/50 transition" title="Hapus">×</button>` : ''}
+            </div>`;
+        });
+
+        unloadingMasterList.innerHTML = '';
+        unloadingLocations.forEach((loc, index) => {
+          unloadingMasterList.innerHTML += `
+            <div class="flex items-center justify-between bg-slate-800 px-2.5 py-1 rounded-lg text-xs text-slate-200 border border-slate-700/50">
+              <span class="truncate pr-2">${loc}</span>
+              ${isFull ? `<button onclick="removeMasterItem('unloading', ${index})" class="text-red-400 hover:text-red-300 font-bold px-1.5 py-0.5 rounded hover:bg-red-950/50 transition" title="Hapus">×</button>` : ''}
+            </div>`;
+        });
+      }
+    }
+    renderAppUI();
+
+    function addNewMasterItem(type) {
+      const isOwner = (teamAccessList[currentEmail] === 'full');
+      let inputElem, val;
+
+      if (type === 'kategori') {
+        inputElem = document.getElementById('newKategoriInput');
+        val = inputElem.value.trim();
+        if (!val) return alert("Nama Kategori tidak boleh kosong!");
+        if (!kategoriHeaderList.includes(val)) kategoriHeaderList.push(val);
+      } else if (type === 'vehicle') {
+        inputElem = document.getElementById('newVehicleInput');
+        val = inputElem.value.trim();
+        if (!val) return alert("Plat nomor tidak boleh kosong!");
+        val = formatPlatNomor(val);
+        if (!vehicleList.includes(val)) vehicleList.push(val);
+        else return alert("Plat nomor sudah ada.");
+      } else if (type === 'loading' || type === 'unloading') {
+        inputElem = document.getElementById(type === 'loading' ? 'newLoadingInput' : 'newUnloadingInput');
+        val = inputElem.value.trim();
+        if (!val) return alert("Nama lokasi tidak boleh kosong!");
+
+        if (!isOwner) {
+          const allowedList = [
+            "Gudang Cainiao, Cikarang", "Gudang ILC, KIIC Karawang", "Gudang SFP Lot 41, KIIC Karawang",
+            "Gudang ILC, Surya Cipta Karawang", "Lot 17, KIIC (Homebase)", "Gudang Lot 41, PPK",
+            "Gudang Lot 41, PPW", "Gudang Lot 41, CLOVE", "Gudang ILC, KIIC"
+          ];
+          if (!allowedList.some(item => item.toLowerCase() === val.toLowerCase())) {
+            alert("Format lokasi tidak sesuai standar gudang!");
+            return;
+          }
+        }
+
+        if (type === 'loading') {
+          if (!loadingLocations.includes(val)) loadingLocations.push(val);
+          else return alert("Lokasi sudah ada.");
+        } else {
+          if (!unloadingLocations.includes(val)) unloadingLocations.push(val);
+          else return alert("Lokasi sudah ada.");
+        }
+      }
+
+      renderAppUI();
+      inputElem.value = '';
+      alert("Berhasil menambahkan item master baru!");
+    }
+
+    function removeMasterItem(type, index) {
+      const role = teamAccessList[currentEmail];
+      if (role !== 'full') {
+        alert("Akses ditolak! Hanya Owner / Full Access yang berhak menghapus item master.");
+        return;
+      }
+
+      if (confirm("Hapus item ini?")) {
+        if (type === 'kategori') kategoriHeaderList.splice(index, 1);
+        else if (type === 'vehicle') vehicleList.splice(index, 1);
+        else if (type === 'loading') loadingLocations.splice(index, 1);
+        else if (type === 'unloading') unloadingLocations.splice(index, 1);
+        
+        renderAppUI();
+        alert("Item berhasil dihapus.");
+      }
+    }
+
+    function initUserSession() {
+      const emailElem = document.getElementById('currentUserEmail');
+      const roleBadge = document.getElementById('userRoleBadge');
+      emailElem.innerText = currentEmail;
+
+      const role = teamAccessList[currentEmail] || 'half';
+      if (role === 'full') {
+        roleBadge.className = "text-[10px] bg-amber-500/25 text-amber-300 px-2 py-0.5 rounded font-bold";
+        roleBadge.innerText = "Full Access (Owner)";
+      } else {
+        roleBadge.className = "text-[10px] bg-blue-500/25 text-blue-300 px-2 py-0.5 rounded font-bold";
+        roleBadge.innerText = "Half Access (DB & Add Master)";
+      }
+    }
+    initUserSession();
+
+    setInterval(() => {
+      const now = new Date();
+      const h = String(now.getHours()).padStart(2, '0');
+      const m = String(now.getMinutes()).padStart(2, '0');
+      const s = String(now.getSeconds()).padStart(2, '0');
+      document.getElementById('waktuOtomatis').value = `${h}:${m}:${s}`;
+      
+      const d = String(now.getDate()).padStart(2, '0');
+      const mo = String(now.getMonth() + 1).padStart(2, '0');
+      const y = now.getFullYear();
+      document.getElementById('liveWatermark').innerText = `TIMESTAMP: ${d}-${mo}-${y} ${h}:${m}:${s}`;
+    }, 1000);
+
+    function switchTab(tab) {
+      const tabForm = document.getElementById('tabForm');
+      const tabDb = document.getElementById('tabDb');
+      const tabMaster = document.getElementById('tabMaster');
+
+      const btnTabForm = document.getElementById('btnTabForm');
+      const btnTabDb = document.getElementById('btnTabDb');
+      const btnTabMaster = document.getElementById('btnTabMaster');
+
+      tabForm.classList.add('hidden');
+      tabDb.classList.add('hidden');
+      tabMaster.classList.add('hidden');
+
+      btnTabForm.className = "px-2.5 py-1 text-[11px] sm:text-xs font-semibold rounded-md bg-slate-700 text-slate-300 hover:bg-slate-600 transition flex items-center";
+      btnTabDb.className = "px-2.5 py-1 text-[11px] sm:text-xs font-semibold rounded-md bg-slate-700 text-slate-300 hover:bg-slate-600 transition flex items-center";
+      btnTabMaster.className = "px-2.5 py-1 text-[11px] sm:text-xs font-semibold rounded-md bg-slate-700 text-slate-300 hover:bg-slate-600 transition flex items-center";
+
+      if (tab === 'form') {
+        tabForm.classList.remove('hidden');
+        btnTabForm.className = "px-2.5 py-1 text-[11px] sm:text-xs font-semibold rounded-md bg-blue-600 text-white transition shadow flex items-center";
+      } else if (tab === 'db') {
+        tabDb.classList.remove('hidden');
+        btnTabDb.className = "px-2.5 py-1 text-[11px] sm:text-xs font-semibold rounded-md bg-blue-600 text-white transition shadow flex items-center";
+        checkDatabaseAccess();
+      } else if (tab === 'master') {
+        tabMaster.classList.remove('hidden');
+        btnTabMaster.className = "px-2.5 py-1 text-[11px] sm:text-xs font-semibold rounded-md bg-blue-600 text-white transition shadow flex items-center";
+        checkMasterAccess();
+      }
+    }
+
+    function checkDatabaseAccess() {
+      const accessDeniedPanel = document.getElementById('accessDeniedPanel');
+      const databaseContent = document.getElementById('databaseContent');
+      const role = teamAccessList[currentEmail] || 'half';
+
+      if (role === 'full' || role === 'half') {
+        accessDeniedPanel.classList.add('hidden');
+        databaseContent.classList.remove('hidden');
+        renderDatabaseTable();
+      } else {
+        accessDeniedPanel.classList.remove('hidden');
+        databaseContent.classList.add('hidden');
+      }
+    }
+
+    function checkMasterAccess() {
+      const masterAccessDenied = document.getElementById('masterAccessDenied');
+      const masterControlContent = document.getElementById('masterControlContent');
+      const ownerEmailManagement = document.getElementById('ownerEmailManagement');
+      const role = teamAccessList[currentEmail] || 'half';
+
+      masterAccessDenied.classList.add('hidden');
+      masterControlContent.classList.remove('hidden');
+
+      if (role === 'full') {
+        ownerEmailManagement.classList.remove('hidden');
+        renderPendingApprovals();
+      } else {
+        ownerEmailManagement.classList.add('hidden');
+      }
+
+      renderAppUI();
+    }
+
+    function changeUser() {
+      const inputEmail = prompt("Simulasi Ganti Akun Email:", currentEmail);
+      if (inputEmail) {
+        currentEmail = inputEmail.trim();
+        if (!teamAccessList[currentEmail]) {
+          teamAccessList[currentEmail] = 'half';
+        }
+        initUserSession();
+        alert(`Akun diganti ke: ${currentEmail} (${teamAccessList[currentEmail].toUpperCase()} ACCESS)`);
+        switchTab('form');
+      }
+    }
+
+    function addTeamEmail() {
+      const role = teamAccessList[currentEmail];
+      if (role !== 'full') {
+        alert("Hanya Owner / Full Access yang bisa memberikan akses tim.");
+        return;
+      }
+      const emailInput = document.getElementById('newAccessEmail');
+      const roleSelect = document.getElementById('newAccessRole');
+      const email = emailInput.value.trim();
+      const newRole = roleSelect.value;
+
+      if (email && !teamAccessList[email]) {
+        teamAccessList[email] = newRole;
+        emailInput.value = '';
+        alert(`Berhasil menambahkan ${email} dengan akses ${newRole.toUpperCase()}`);
+      } else {
+        alert("Email tidak valid atau sudah terdaftar.");
+      }
+    }
+
+    async function startCamera() {
+      const video = document.getElementById('videoElement');
+      const container = document.getElementById('cameraContainer');
+      const placeholder = document.getElementById('cameraPlaceholder');
+      const action = document.getElementById('cameraAction');
+
+      try {
+        videoStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' }, audio: false });
+        video.srcObject = videoStream;
+        container.classList.remove('hidden');
+        placeholder.classList.add('hidden');
+        action.classList.remove('hidden');
+      } catch (err) {
+        alert("Tidak dapat mengakses kamera: " + err.message);
+      }
+    }
+
+    function takeSnapshot() {
+      const video = document.getElementById('videoElement');
+      const canvas = document.getElementById('canvasElement');
+      const container = document.getElementById('cameraContainer');
+      const action = document.getElementById('cameraAction');
+
+      canvas.width = video.videoWidth || 640;
+      canvas.height = video.videoHeight || 480;
+      const ctx = canvas.getContext('2d');
+      ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+      const now = new Date();
+      const d = String(now.getDate()).padStart(2, '0');
+      const mo = String(now.getMonth() + 1).padStart(2, '0');
+      const y = now.getFullYear();
+      const h = String(now.getHours()).padStart(2, '0');
+      const mi = String(now.getMinutes()).padStart(2, '0');
+      const s = String(now.getSeconds()).padStart(2, '0');
+
+      ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
+      ctx.fillRect(10, canvas.height - 40, 320, 30);
+      ctx.fillStyle = '#ffffff';
+      ctx.font = '14px monospace';
+      ctx.fillText(`TIMESTAMP: ${d}-${mo}-${y} ${h}:${mi}:${s}`, 20, canvas.height - 20);
+
+      capturedPhotoData = canvas.toDataURL('image/jpeg');
+      if (videoStream) videoStream.getTracks().forEach(t => t.stop());
+
+      container.classList.add('hidden');
+      canvas.classList.remove('hidden');
+      action.innerHTML = '<span class="text-emerald-400 font-bold text-xs"><i class="fa-solid fa-circle-check"></i> Foto Tersimpan</span> <button type="button" onclick="startCamera()" class="ml-2 text-xs bg-slate-700 px-2 py-1 rounded text-white">Ulangi</button>';
+    }
+
+    function retakePhoto() {
+      document.getElementById('canvasElement').classList.add('hidden');
+      document.getElementById('cameraAction').classList.add('hidden');
+      document.getElementById('cameraPlaceholder').classList.remove('hidden');
+      capturedPhotoData = null;
+      startCamera();
+    }
+
+    async function syncToGoogleSheets(payloadData) {
+      try {
+        await fetch(GSHEET_API_URL, {
+          method: "POST",
+          mode: "no-cors",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payloadData)
+        });
+        console.log("Sinkronisasi ke GSheet berhasil dikirim.");
+      } catch (error) {
+        console.error("Gagal sinkron ke GSheet:", error);
+      }
+    }
+
+    function handleFormSubmit(event) {
+      event.preventDefault();
+      if (!capturedPhotoData) {
+        alert("Wajib ambil foto bukti timestamp tahapan!");
+        return;
+      }
+
+      const kategoriVal = document.getElementById('kategoriHeader').value;
+      const vehicleVal = document.getElementById('vehicle').value;
+      const tipeUnitVal = document.getElementById('tipeUnit').value;
+      const loadingVal = document.getElementById('loadingLocation').value;
+      const unloadingVal = document.getElementById('unloadingLocation').value;
+      const tahapVal = document.getElementById('tahap').value;
+
+      const now = new Date();
+      const d = String(now.getDate()).padStart(2, '0');
+      const mo = String(now.getMonth() + 1).padStart(2, '0');
+      const y = now.getFullYear();
+      const formattedDate = `${d}-${mo}-${y}`;
+      const currentTime = String(now.getHours()).padStart(2, '0') + ":" + String(now.getMinutes()).padStart(2, '0') + ":" + String(now.getSeconds()).padStart(2, '0');
+
+      let existingRecord = databaseData.find(item => item.tanggal === formattedDate && item.vehicle === vehicleVal && item.kategori === kategoriVal);
+
+      let payload;
+      if (existingRecord) {
+        existingRecord[tahapVal] = currentTime;
+        existingRecord['foto' + tahapVal.charAt(0).toUpperCase() + tahapVal.slice(1)] = capturedPhotoData;
+        existingRecord.tipeUnit = tipeUnitVal;
+        existingRecord.isEdited = true;
+        payload = { kategori: kategoriVal, ...existingRecord };
+        alert(`[1 Row Update & GSheet Synced] Tahapan "${tahapVal}" untuk ${vehicleVal} diperbarui!`);
+      } else {
+        let newRecord = {
+          id: Date.now(),
+          tanggal: formattedDate,
+          kategori: kategoriVal,
+          vehicle: vehicleVal,
+          tipeUnit: tipeUnitVal,
+          rit: 1,
+          loadingLocation: loadingVal,
+          arrivalMuat: '', fotoArrivalMuat: '',
+          startLoad: '', fotoStartLoad: '',
+          finishLoad: '', fotoFinishLoad: '',
+          unloadingLocation: unloadingVal,
+          arrivalBongkar: '', fotoArrivalBongkar: '',
+          startUnload: '', fotoStartUnload: '',
+          finishUnload: '', fotoFinishUnload: '',
+          jobOrder: document.getElementById('jobOrder').value || 'JO-000000',
+          isEdited: false
+        };
+        newRecord[tahapVal] = currentTime;
+        newRecord['foto' + tahapVal.charAt(0).toUpperCase() + tahapVal.slice(1)] = capturedPhotoData;
+        databaseData.unshift(newRecord);
+        payload = { kategori: kategoriVal, ...newRecord };
+        alert(`[Kategori: ${kategoriVal}] Data baru berhasil disubmit & disinkronkan ke GSheet!`);
+      }
+
+      syncToGoogleSheets(payload);
+
+      document.getElementById('ritaseForm').reset();
+      document.getElementById('canvasElement').classList.add('hidden');
+      document.getElementById('cameraAction').classList.add('hidden');
+      document.getElementById('cameraPlaceholder').classList.remove('hidden');
+      capturedPhotoData = null;
+    }
+
+    function renderDatabaseTable() {
+      const tbody = document.getElementById('dbTableBody');
+      const searchQuery = document.getElementById('searchInput').value.toLowerCase();
+      tbody.innerHTML = '';
+      
+      const role = teamAccessList[currentEmail] || 'half';
+      const isFull = (role === 'full');
+
+      const filteredData = databaseData.filter(item => {
+        return item.tanggal.toLowerCase().includes(searchQuery) ||
+               item.kategori.toLowerCase().includes(searchQuery) ||
+               item.vehicle.toLowerCase().includes(searchQuery) ||
+               item.tipeUnit.toLowerCase().includes(searchQuery) ||
+               item.jobOrder.toLowerCase().includes(searchQuery) ||
+               item.loadingLocation.toLowerCase().includes(searchQuery) ||
+               item.unloadingLocation.toLowerCase().includes(searchQuery);
+      });
+
+      if (filteredData.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="15" class="p-4 text-center text-slate-400">Tidak ada data yang cocok dengan pencarian.</td></tr>`;
+        return;
+      }
+
+      filteredData.forEach(item => {
+        const tr = document.createElement('tr');
+        tr.className = "hover:bg-slate-750 transition";
+        
+        const cellWithPhoto = (timeVal, fotoVal, fieldKey) => `
+          <td class="p-2.5 whitespace-nowrap">
+            <div class="flex items-center space-x-1.5">
+              <input type="text" value="${timeVal}" onchange="handleFieldEdit(${item.id}, '${fieldKey}', this.value)" class="bg-slate-900 border border-slate-700 rounded px-1.5 py-1 w-16 text-[11px] text-white font-mono">
+              ${fotoVal ? `<a href="${fotoVal}" target="_blank" class="text-blue-400 hover:text-blue-300 text-[10px] underline" title="Lihat Foto"><i class="fa-solid fa-camera"></i></a>` : '<span class="text-slate-600 text-[10px]">-</span>'}
+            </div>
+          </td>
+        `;
+
+        tr.innerHTML = `
+          <td class="p-3 whitespace-nowrap font-mono text-blue-300 font-bold">${item.tanggal}</td>
+          <td class="p-3 whitespace-nowrap"><span class="bg-indigo-950 text-indigo-300 border border-indigo-800 px-2 py-0.5 rounded text-[10px]">${item.kategori}</span></td>
+          <td class="p-3 font-semibold text-blue-400 whitespace-nowrap">${item.vehicle}</td>
+          <td class="p-3 text-center whitespace-nowrap"><span class="bg-amber-500/10 text-amber-300 border border-amber-500/30 px-2 py-0.5 rounded text-[10px] font-semibold">${item.tipeUnit}</span></td>
+          <td class="p-3 text-center whitespace-nowrap"><span class="bg-blue-900/50 text-blue-300 px-2 py-0.5 rounded">${item.rit}</span></td>
+          <td class="p-3 whitespace-nowrap"><input type="text" value="${item.loadingLocation}" onchange="handleFieldEdit(${item.id}, 'loadingLocation', this.value)" class="bg-slate-900 border border-slate-700 rounded px-2 py-1 w-28 text-xs text-white"></td>
+          
+          ${cellWithPhoto(item.arrivalMuat, item.fotoArrivalMuat, 'arrivalMuat')}
+          ${cellWithPhoto(item.startLoad, item.fotoStartLoad, 'startLoad')}
+          ${cellWithPhoto(item.finishLoad, item.fotoFinishLoad, 'finishLoad')}
+
+          <td class="p-3 whitespace-nowrap"><input type="text" value="${item.unloadingLocation}" onchange="handleFieldEdit(${item.id}, 'unloadingLocation', this.value)" class="bg-slate-900 border border-slate-700 rounded px-2 py-1 w-28 text-xs text-white"></td>
+          
+          ${cellWithPhoto(item.arrivalBongkar, item.fotoArrivalBongkar, 'arrivalBongkar')}
+          ${cellWithPhoto(item.startUnload, item.fotoStartUnload, 'startUnload')}
+          ${cellWithPhoto(item.finishUnload, item.fotoFinishUnload, 'finishUnload')}
+
+          <td class="p-3 whitespace-nowrap"><input type="text" value="${item.jobOrder}" onchange="handleFieldEdit(${item.id}, 'jobOrder', this.value)" class="bg-slate-900 border border-slate-700 rounded px-2 py-1 w-24 text-xs text-emerald-400 font-semibold"></td>
+          
+          <td class="p-3 text-center whitespace-nowrap">
+            <div class="flex items-center justify-center space-x-1.5">
+              ${item.isEdited ? '<span class="bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 w-6 h-6 rounded-full flex items-center justify-center font-bold text-xs" title="Telah Diedit (OK)"><i class="fa-solid fa-check"></i></span>' : '<span class="text-slate-500 text-xs">-</span>'}
+              ${isFull ? `<button onclick="deleteRecord(${item.id})" class="bg-red-600 hover:bg-red-500 text-white font-bold w-6 h-6 rounded-lg flex items-center justify-center transition" title="Hapus Baris"><i class="fa-solid fa-xmark text-xs"></i></button>` : ''}
+            </div>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    function deleteRecord(id) {
+      const role = teamAccessList[currentEmail];
+      if (role !== 'full') {
+        alert("Akses ditolak! Hanya Owner / Full Access yang dapat menghapus baris database.");
+        return;
+      }
+      if (confirm("Yakin ingin menghapus data ritase ini?")) {
+        databaseData = databaseData.filter(item => item.id !== id);
+        renderDatabaseTable();
+        alert("Data ritase berhasil dihapus.");
+      }
+    }
+
+    function handleFieldEdit(id, field, newValue) {
+      const role = teamAccessList[currentEmail] || 'half';
+      const isOwner = (role === 'full');
+      const record = databaseData.find(item => item.id === id);
+
+      if (!isOwner && (field === 'loadingLocation' || field === 'unloadingLocation')) {
+        const allowedList = [
+          "Gudang Cainiao, Cikarang", "Gudang ILC, KIIC Karawang", "Gudang SFP Lot 41, KIIC Karawang",
+          "Gudang ILC, Surya Cipta Karawang", "Lot 17, KIIC (Homebase)", "Gudang Lot 41, PPK",
+          "Gudang Lot 41, PPW", "Gudang Lot 41, CLOVE", "Gudang ILC, KIIC"
+        ];
+        if (!allowedList.some(item => item.toLowerCase() === newValue.toLowerCase())) {
+          alert("Format gudang tidak sesuai standar! Editan ditolak.");
+          renderDatabaseTable();
+          return;
+        }
+      }
+
+      if (isOwner) {
+        if (record) {
+          record[field] = newValue;
+          record.isEdited = true;
+          renderDatabaseTable();
+          syncToGoogleSheets({ kategori: record.kategori, ...record });
+          alert("Perubahan data disimpan, dikonfirmasi (centang hijau), & disinkronkan ke GSheet.");
+        }
+      } else {
+        pendingApprovals.push({
+          id: Date.now(),
+          rowId: id,
+          editor: currentEmail,
+          field: field,
+          newValue: newValue,
+          time: new Date().toLocaleTimeString()
+        });
+        alert(`Perubahan untuk kolom "${field}" telah dikirim ke Owner untuk approval.`);
+      }
+    }
+  </script>
+</body>
+</html>
